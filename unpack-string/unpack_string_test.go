@@ -25,16 +25,16 @@ var decodeTests = []struct {
 	{"a0b2", "bb", "with zero count"},
 	{"a0000b2", "bb", "many zero count"},
 	{"z1y1x1", "zyx", "only one count"},
-	{",1$2.3*4", ",$$...****", "punctuation chars"},
-	{`qwe\4\5`, `qwe45`, "string with 2 esc characters"},
-	{`qwe\45`, `qwe44444`, "string with esc character"},
+	{`\,1\$2\.3\*4`, ",$$...****", "esc punctuation chars"},
+	{`qwe\4\5`, `qwe45`, "string with 2 esc numbers"},
+	{`qwe\45`, `qwe44444`, "string with 1 esc char"},
 	{`qwe\\5`, `qwe\\\\\`, "string with same esc character"},
 }
 
 func TestUnpackString(t *testing.T) {
 	for _, test := range decodeTests {
 		if actual := UnpackString(test.input); actual != test.expected {
-			t.Errorf("FAIL %s - UnpackString(%s) = %q, expected %q.",
+			t.Errorf("FAIL %s - UnpackString(%s) = '%s', expected '%s'.",
 				test.description, test.input, actual, test.expected)
 			continue
 		}
