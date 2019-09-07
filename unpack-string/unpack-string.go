@@ -1,6 +1,6 @@
 /*
  * HomeWork-2: Unpack String
- * Created on 05.09.19 22:04
+ * Created on 07.09.19 12:04
  * Copyright (c) 2019 - Eugene Klimov
  */
 
@@ -13,8 +13,8 @@ import (
 	"unicode"
 )
 
-// RunLengthDecode returns RLE decoded.
-func RunLengthDecode(input string) string {
+// UnpackString returns string unpacked.
+func UnpackString(input string) string {
 	result := strings.Builder{}
 	digits := ""
 
