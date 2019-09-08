@@ -29,6 +29,9 @@ var decodeTests = []struct {
 	{`qwe\4\5`, `qwe45`, "string with 2 esc numbers"},
 	{`qwe\45`, `qwe44444`, "string with 1 esc char"},
 	{`qwe\\5`, `qwe\\\\\`, "string with same esc character"},
+	{`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2a0000b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5`,
+		`aaaabccdddddeabcdXYZAABBBCCCCWWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB  hsqq qww  aabbbccccbbbbzyx,$$...****qwe45qwe44444qwe\\\\\`,
+		"mixed all strings"},
 }
 
 func TestUnpackString(t *testing.T) {
@@ -44,6 +47,6 @@ func TestUnpackString(t *testing.T) {
 
 func BenchmarkUnpackString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		UnpackString("a4bc2d5e")
+		UnpackString(`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2a0000b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5`)
 	}
 }

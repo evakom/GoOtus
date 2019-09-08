@@ -42,7 +42,7 @@ func UnpackString(input string) string {
 			char = ""
 		}
 
-		if digit > 0 {
+		if digit > 0 { // flush series
 			result += strings.Repeat(char, digit-1) // one char already appended
 			digits = ""
 			char = ""
