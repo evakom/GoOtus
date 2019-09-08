@@ -24,7 +24,7 @@ var decodeTests = []struct {
 	{"a2b3c4", "aabbbcccc", "no single characters lower"},
 	{"a0b2", "bb", "with zero count"},
 	{"a0000b2", "bb", "many zero count"},
-	{"z1y1x1", "zyx", "only one count"},
+	{"z1y1x1", "zyx", "only one count per char"},
 	{`\,1\$2\.3\*4`, ",$$...****", "esc punctuation chars"},
 	{`qwe\4\5`, `qwe45`, "string with 2 esc numbers"},
 	{`qwe\45`, `qwe44444`, "string with 1 esc char"},
