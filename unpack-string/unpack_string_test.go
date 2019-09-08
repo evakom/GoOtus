@@ -31,7 +31,7 @@ var decodeTests = []struct {
 	{`qwe\\5`, `qwe\\\\\`, "string with same esc character"},
 	{`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2a0000b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5`,
 		`aaaabccdddddeabcdXYZAABBBCCCCWWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB  hsqq qww  aabbbccccbbbbzyx,$$...****qwe45qwe44444qwe\\\\\`,
-		"mixed all strings"},
+		"mixed all test strings"},
 }
 
 func TestUnpackString(t *testing.T) {
