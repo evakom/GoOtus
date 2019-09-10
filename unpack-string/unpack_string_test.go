@@ -23,7 +23,6 @@ var decodeTests = []struct {
 	{" 2hsq2 qw2 2", "  hsqq qww  ", "whitespace mixed in string"},
 	{"a2b3c4", "aabbbcccc", "no single characters lower"},
 	{"a0b2", "bb", "with zero count"},
-	{"a0000b2", "bb", "many zero count"},
 	{"z1y1x1", "zyx", "only one count per char"},
 	{`\,1\$2\.3\*4`, ",$$...****", "esc punctuation chars"},
 	{`qwe\4\5`, `qwe45`, "string with 2 esc numbers"},
@@ -31,8 +30,8 @@ var decodeTests = []struct {
 	{`qwe\\5`, `qwe\\\\\`, "string with same esc character"},
 	{`\`, "", "fail esc string"},
 	{"А1Б2Ц3Я0", "АББЦЦЦ", "cyrillic string"},
-	{`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2a0000b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5А1Б2Ц3`,
-		`aaaabccdddddeabcdXYZAABBBCCCCWWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB  hsqq qww  aabbbccccbbbbzyx,$$...****qwe45qwe44444qwe\\\\\АББЦЦЦ`,
+	{`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5А1Б2Ц3`,
+		`aaaabccdddddeabcdXYZAABBBCCCCWWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWB  hsqq qww  aabbbccccbbzyx,$$...****qwe45qwe44444qwe\\\\\АББЦЦЦ`,
 		"mixed all test strings"},
 }
 

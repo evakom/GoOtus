@@ -8,7 +8,6 @@
 package unpackstring
 
 import (
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -36,7 +35,10 @@ func UnpackString(input string) string {
 			}
 		}
 
-		digit, _ := strconv.Atoi(digits) // no need to check error - IsDigit "checks" it
+		digit := 0
+		for _, r := range digits { // fast convert string to int
+			digit = digit*10 + int(r-'0')
+		}
 
 		if digit == 0 && len(digits) > 0 { //delete last char if zero repeated
 			s := strings.TrimRight(result.String(), char)
