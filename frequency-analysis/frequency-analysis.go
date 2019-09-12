@@ -4,8 +4,8 @@
  * Copyright (c) 2019 - Eugene Klimov
  */
 
-// Package frequency_analysis implements counting most popular words.
-package frequency_analysis
+// Package frequency implements counting most popular words.
+package frequency
 
 import (
 	"regexp"

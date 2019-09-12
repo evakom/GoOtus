@@ -4,7 +4,7 @@
  * Copyright (c) 2019 - Eugene Klimov
  */
 
-package frequency_analysis
+package frequency
 
 import (
 	"reflect"
