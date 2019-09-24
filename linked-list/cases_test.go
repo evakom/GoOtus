@@ -1,6 +1,15 @@
+/*
+ * HomeWork-4: Doubly Linked List
+ * Created on 23.09.19 19:18
+ * Copyright (c) 2019 - Eugene Klimov
+ */
+
 package linkedlist
 
 import "testing"
+
+// listActions calls a function of the linked list.
+type listActions func(*testing.T, *List)
 
 var newListTestCases = []struct {
 	name      string
@@ -83,13 +92,13 @@ var RemoveTestCases = []struct {
 var pushPopTestCases = []struct {
 	name     string
 	in       []interface{}
-	actions  []checkedAction
+	actions  []listActions
 	expected []interface{}
 }{
 	{
 		name: "PushFront only",
 		in:   []interface{}{},
-		actions: []checkedAction{
+		actions: []listActions{
 			pushFront(4),
 			pushFront(3),
 			pushFront(2),
@@ -100,7 +109,7 @@ var pushPopTestCases = []struct {
 	{
 		name: "PushBack only",
 		in:   []interface{}{},
-		actions: []checkedAction{
+		actions: []listActions{
 			pushBack(1),
 			pushBack(2),
 			pushBack(3),
@@ -109,18 +118,18 @@ var pushPopTestCases = []struct {
 		expected: []interface{}{1, 2, 3, 4},
 	},
 	{
-		name: "PopFront only, pop some elements",
+		name: "PopFront some items",
 		in:   []interface{}{1, 2, 3, 4},
-		actions: []checkedAction{
+		actions: []listActions{
 			popFront(1, nil),
 			popFront(2, nil),
 		},
 		expected: []interface{}{3, 4},
 	},
 	{
-		name: "PopFront only, pop till empty",
+		name: "PopFront till empty",
 		in:   []interface{}{1, 2, 3, 4},
-		actions: []checkedAction{
+		actions: []listActions{
 			popFront(1, nil),
 			popFront(2, nil),
 			popFront(3, nil),
@@ -130,18 +139,18 @@ var pushPopTestCases = []struct {
 		expected: []interface{}{},
 	},
 	{
-		name: "PopBack only, pop some elements",
+		name: "PopBack some items",
 		in:   []interface{}{1, 2, 3, 4},
-		actions: []checkedAction{
+		actions: []listActions{
 			popBack(4, nil),
 			popBack(3, nil),
 		},
 		expected: []interface{}{1, 2},
 	},
 	{
-		name: "PopBack only, pop till empty",
+		name: "PopBack till empty",
 		in:   []interface{}{1, 2, 3, 4},
-		actions: []checkedAction{
+		actions: []listActions{
 			popBack(4, nil),
 			popBack(3, nil),
 			popBack(2, nil),
@@ -153,7 +162,7 @@ var pushPopTestCases = []struct {
 	{
 		name: "mixed actions",
 		in:   []interface{}{2, 3},
-		actions: []checkedAction{
+		actions: []listActions{
 			pushFront(1),
 			pushBack(4),
 			popFront(1, nil),
@@ -171,22 +180,19 @@ var pushPopTestCases = []struct {
 	},
 }
 
-// checkedAction calls a function of the linked list and (possibly) checks the result
-type checkedAction func(*testing.T, *List)
-
-func pushFront(arg interface{}) checkedAction {
+func pushFront(arg interface{}) listActions {
 	return func(t *testing.T, l *List) {
 		l.PushFront(arg)
 	}
 }
 
-func pushBack(arg interface{}) checkedAction {
+func pushBack(arg interface{}) listActions {
 	return func(t *testing.T, l *List) {
 		l.PushBack(arg)
 	}
 }
 
-func popFront(expected interface{}, expectedErr error) checkedAction {
+func popFront(expected interface{}, expectedErr error) listActions {
 	return func(t *testing.T, l *List) {
 		v, err := l.PopFront()
 		if err != expectedErr {
@@ -199,9 +205,9 @@ func popFront(expected interface{}, expectedErr error) checkedAction {
 	}
 }
 
-func popBack(expected interface{}, expectedErr error) checkedAction {
-	return func(t *testing.T, ll *List) {
-		v, err := ll.PopBack()
+func popBack(expected interface{}, expectedErr error) listActions {
+	return func(t *testing.T, l *List) {
+		v, err := l.PopBack()
 		if err != expectedErr {
 			t.Errorf("PopBack() returned wrong, expected no error, got= %v", err)
 		}

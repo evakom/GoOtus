@@ -63,18 +63,16 @@ func (l *List) Remove(i *Item) error {
 	if l.length == 0 || i == nil {
 		return ErrEmptyList
 	}
-	if i.prev == nil {
-		l.first = i.next
-	} else {
+	if i.prev != nil {
 		i.prev.next = i.next
-	}
-	if i.next == nil {
-		l.last = i.prev
 	} else {
-		i.next.prev = i.prev
+		l.first = i.next
 	}
-	//i.prev.next = i.next
-	//i.next.prev = i.prev
+	if i.next != nil {
+		i.next.prev = i.prev
+	} else {
+		l.last = i.prev
+	}
 	l.length--
 	return nil
 }

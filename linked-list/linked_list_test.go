@@ -54,20 +54,20 @@ func TestRemove(t *testing.T) {
 	}
 }
 
-// checkLinkedList checks that the linked list is constructed correctly.
+// checkLinkedList checks that the linked list is correct.
 func checkLinkedList(t *testing.T, l *List, expected []interface{}) {
 	// check that length and elements are correct (scan once from begin -> end)
-	elem, count, idx := l.First(), 0, 0
-	for ; elem != nil && idx < len(expected); elem, count, idx = elem.Next(), count+1, idx+1 {
-		if elem.data != expected[idx] {
-			t.Errorf("wrong value from %d-th element, expected= %v, got= %v", idx, expected[idx], elem.data)
+	item, count, i := l.First(), 0, 0
+	for ; item != nil && i < len(expected); item, count, i = item.Next(), count+1, i+1 {
+		if item.data != expected[i] {
+			t.Errorf("wrong value from %d-th item, expected = %v, got = %v", i, expected[i], item.data)
 		}
 	}
-	if !(elem == nil && idx == len(expected)) {
-		t.Errorf("expected %d elements, got= %d", len(expected), count)
+	if !(item == nil && i == len(expected)) {
+		t.Errorf("expected %d items, got = %d", len(expected), count)
 	}
 
-	// if elements are the same, we also need to examine the links (next & prev)
+	// if items are the same, need to examine links too (next & prev)
 	switch {
 	case l.First() == nil && l.Last() == nil: // empty list
 		return
@@ -79,28 +79,27 @@ func checkLinkedList(t *testing.T, l *List, expected []interface{}) {
 			l.Last().Prev() == nil
 
 		if !valid {
-			t.Errorf("expected to only have 1 element and no links, got= %v", l.debugString())
+			t.Errorf("expected only 1 item and no links, got = %v", l.debugString())
 		}
 	}
 
-	// >1 element
+	// > 1 element
 	if l.First().Prev() != nil {
-		t.Errorf("expected Head.Prev() == nil, got= %v", l.First().Prev())
+		t.Errorf("expected First.Prev() == nil, got = %v", l.First().Prev())
 	}
 
 	prev := l.First()
 	cur := l.First().Next()
-	for idx := 0; cur != nil; idx++ {
+	for i := 0; cur != nil; i++ {
 		if !(prev.Next() == cur && cur.Prev() == prev) {
-			t.Errorf("%d-th element's links is wrong", idx)
+			t.Errorf("%d-th item's links is wrong", i)
 		}
-
 		prev = cur
 		cur = cur.Next()
 	}
 
 	if l.Last().Next() != nil {
-		t.Errorf("expected Last().Next() == nil, got= %v", l.Last().Next())
+		t.Errorf("expected Last().Next() == nil, got = %v", l.Last().Next())
 	}
 }
 
@@ -110,15 +109,16 @@ func (l *List) debugString() string {
 	buf.WriteString(fmt.Sprintf("First()= %p; ", l.First()))
 
 	for cur := l.First(); cur != nil; cur = cur.Next() {
-		buf.WriteString(fmt.Sprintf("[Prev()= %p, Val= %p (%v), Next()= %p] <-> ", cur.Prev(), cur, cur.data, cur.Next()))
+		buf.WriteString(fmt.Sprintf("[Prev() = %p, Data = %p (%v), Next() = %p] <-> ", cur.Prev(), cur, cur.data, cur.Next()))
 	}
 
-	buf.WriteString(fmt.Sprintf("; Last()= %p; ", l.Last()))
+	buf.WriteString(fmt.Sprintf("; Last() = %p; ", l.Last()))
 	buf.WriteByte('}')
 
 	return buf.String()
 }
 
+// getNthItem helps getting n-th item for Remove tests
 func (l *List) getNthItem(n int) *Item {
 	for i := l.First(); i != nil; i = i.next {
 		n--
