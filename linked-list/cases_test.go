@@ -30,7 +30,7 @@ var newListTestCases = []struct {
 		name:      "1 item",
 		in:        []interface{}{999},
 		out:       []interface{}{999},
-		expLength: 2,
+		expLength: 1,
 	},
 }
 
@@ -47,7 +47,7 @@ var RemoveTestCases = []struct {
 		in:        []interface{}{1, 2, 3, 4, 5, 6, 7, 88, 99, 1000},
 		RemoveNth: 5,
 		out:       []interface{}{1, 2, 3, 4, 6, 7, 88, 99, 1000},
-		expLength: 8,
+		expLength: 9,
 	},
 	{
 		name:        "no items, no remove",
