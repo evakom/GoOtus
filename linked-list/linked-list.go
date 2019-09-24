@@ -49,28 +49,6 @@ func (l *List) Len() int {
 	return l.length
 }
 
-// Remove deletes item from the list.
-func (l *List) Remove(i *Item) error {
-	if l.Len() == 0 {
-		return ErrEmptyList
-	}
-	if i.prev == nil {
-		l.first = i.next
-	} else {
-		i.prev.next = i.next
-	}
-
-	if i.next == nil {
-		l.last = i.prev
-	} else {
-		i.next.prev = i.prev
-	}
-
-	l.length--
-
-	return ErrEmptyList
-}
-
 // NewList creates new linked list with the data items.
 func NewList(data ...interface{}) *List {
 	l := &List{}
@@ -78,6 +56,27 @@ func NewList(data ...interface{}) *List {
 		l.PushBack(item)
 	}
 	return l
+}
+
+// Remove deletes item from the list.
+func (l *List) Remove(i *Item) error {
+	if l.length == 0 || i == nil {
+		return ErrEmptyList
+	}
+	if i.prev == nil {
+		l.first = i.next
+	} else {
+		i.prev.next = i.next
+	}
+	if i.next == nil {
+		l.last = i.prev
+	} else {
+		i.next.prev = i.prev
+	}
+	//i.prev.next = i.next
+	//i.next.prev = i.prev
+	l.length--
+	return nil
 }
 
 // PushBack pushes item to end of the list.
@@ -93,10 +92,9 @@ func (l *List) PushBack(v interface{}) {
 
 // PopBack pops item from end of the list.
 func (l *List) PopBack() (interface{}, error) {
-	if l.Len() == 0 {
+	if l.length == 0 {
 		return nil, ErrEmptyList
 	}
-	l.length--
 	v := l.last
 	l.last = l.last.prev
 	if l.last == nil {
@@ -104,26 +102,26 @@ func (l *List) PopBack() (interface{}, error) {
 	} else {
 		l.last.next = nil
 	}
+	l.length--
 	return v.data, nil
 }
 
 // PushFront pushes item to begin of the list.
 func (l *List) PushFront(v interface{}) {
 	node := &Item{data: v, next: l.first}
-	if l.Len() == 0 {
+	l.length++
+	if l.first == nil {
 		l.first, l.last = node, node
 		return
 	}
 	l.first, l.first.prev = node, node
-	l.length++
 }
 
 // PopFront pops item from end of the list.
 func (l *List) PopFront() (interface{}, error) {
-	if l.Len() == 0 {
+	if l.length == 0 {
 		return nil, ErrEmptyList
 	}
-	l.length--
 	v := l.first
 	l.first = l.first.next
 	if l.first == nil {
@@ -131,5 +129,6 @@ func (l *List) PopFront() (interface{}, error) {
 	} else {
 		l.first.prev = nil
 	}
+	l.length--
 	return v.data, nil
 }
