@@ -1,6 +1,6 @@
 /*
- * HomeWork-5: Worker Pool
- * Created on 27.09.19 22:11
+ * HomeWork-4: Worker Pool
+ * Created on 26.09.19 22:11
  * Copyright (c) 2019 - Eugene Klimov
  */
 // Package workerpool implements N-workers with stopping after X-errors.
@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"log"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -113,13 +114,15 @@ func main() {
 
 	// jobs slice
 	for i := 0; i < JOBSNUM; i++ {
+		i := i
 		job := func() error {
 			d := rand.Intn(5) + 1                      // random time for every job
+			n := strconv.Itoa(i)                       // job id
 			time.Sleep(time.Duration(d) * time.Second) // any work here
 			if rand.Intn(2) == 0 {                     // error gen randomly
-				return fmt.Errorf("error from job")
+				return fmt.Errorf("error from job: %s", n)
 			}
-			fmt.Printf("job ended successfully, duration: %d seconds\n", d)
+			fmt.Printf("job: %s ended successfully, duration: %d seconds\n", n, d)
 			return nil
 		}
 		jobs = append(jobs, job)
