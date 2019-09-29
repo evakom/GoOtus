@@ -19,8 +19,8 @@ import (
 const (
 	JOBTIMEOUT = 8   // in seconds
 	JOBSNUM    = 100 // number of all jobs
-	MAXJOBS    = 5   // max concurrency jobs/workers
-	MAXERRORS  = 10  // max errors from all jobs
+	MAXJOBS    = 10  // max concurrency jobs/workers
+	MAXERRORS  = 15  // max errors from all jobs
 )
 
 type Job func() error
@@ -38,8 +38,9 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 		countErr := 0
 		for range errChan {
 			countErr++
+			fmt.Printf("\tTotal number of errors - %d, MAX errors: %d\n", countErr, maxErrors)
 			if countErr >= maxErrors {
-				fmt.Printf("\tTotal number of errors - %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
+				fmt.Printf("\tTotal number of errors: %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
 				close(abortChan) // abort all workers
 				return
 			}
@@ -81,11 +82,10 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 			jobsChan <- j
 		}
 	}
-	close(jobsChan)
 
+	close(jobsChan)
 	err := eg.Wait()
-	time.Sleep(time.Millisecond)
-	close(errChan) // this may be read buffered errors
+	close(errChan)
 
 	return err
 }
