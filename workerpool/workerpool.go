@@ -1,8 +1,9 @@
 /*
- * HomeWork-4: Worker Pool
- * Created on 26.09.19 22:11
+ * HomeWork-5: Worker Pool
+ * Created on 28.09.19 22:11
  * Copyright (c) 2019 - Eugene Klimov
  */
+
 // Package workerpool implements N-workers with stopping after X-errors.
 //package workerpool
 package main
@@ -17,13 +18,14 @@ import (
 	"time"
 )
 
+// Constants.
 const (
-	JOBTIMEOUT = 8   // in seconds
-	JOBSNUM    = 100 // number of all jobs
-	MAXJOBS    = 10  // max concurrency jobs/workers
-	MAXERRORS  = 15  // max errors from all jobs
+	JOBSNUM   = 10 // number of all jobs
+	MAXJOBS   = 3  // max concurrency jobs/workers
+	MAXERRORS = 5  // max errors from all jobs
 )
 
+// Job is type for jobs
 type Job func() error
 
 // WorkerPool is the main worker pool manager.
@@ -56,17 +58,15 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 				select {
 				case <-abortChan:
 					fmt.Printf("\tWorker '%d' aborted\n", i)
-					//return err // what scenario for error?
 					return errors.New("workers aborted")
 				default:
-					break
+					fmt.Printf("\tWorker '%d' started\n", i)
+					if err := job(); err != nil {
+						fmt.Println(err)
+						errChan <- err
+					}
+					fmt.Printf("\tWorker '%d' finished\n", i)
 				}
-				fmt.Printf("\tWorker '%d' started\n", i)
-				if err := job(); err != nil {
-					fmt.Println(err)
-					errChan <- err
-				}
-				fmt.Printf("\tWorker '%d' finished\n", i)
 			}
 			fmt.Printf("\tWorker '%d' exited\n", i)
 			return nil
@@ -98,7 +98,7 @@ func main() {
 	for i := 0; i < JOBSNUM; i++ {
 		i := i
 		job := func() error {
-			d := rand.Intn(3) + 1                      // random time for every job
+			d := rand.Intn(5) + 1                      // random time for every job
 			n := strconv.Itoa(i)                       // job id
 			time.Sleep(time.Duration(d) * time.Second) // any work here
 			if rand.Intn(2) == 0 {                     // error gen randomly
