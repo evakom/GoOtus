@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	JOBTIMEOUT = 8  // in seconds
-	JOBSNUM    = 10 // number of all jobs
-	MAXJOBS    = 2  // max concurrency jobs/workers
-	MAXERRORS  = 2  // max errors from all jobs
+	JOBTIMEOUT = 8   // in seconds
+	JOBSNUM    = 100 // number of all jobs
+	MAXJOBS    = 5   // max concurrency jobs/workers
+	MAXERRORS  = 10  // max errors from all jobs
 )
 
 type Job func() error
@@ -30,7 +30,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	var eg errgroup.Group
 
 	jobsChan := make(chan Job, maxJobs)
-	errChan := make(chan error)
+	errChan := make(chan error, maxJobs)
 	abortChan := make(chan bool)
 
 	// check errors from jobs
@@ -40,8 +40,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 			countErr++
 			if countErr >= maxErrors {
 				fmt.Printf("\tTotal number of errors - %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
-				close(abortChan)
-				//close(jobsChan)  // abort all workers
+				close(abortChan) // abort all workers
 				return
 			}
 		}
@@ -51,62 +50,45 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	for i := 0; i < maxJobs; i++ {
 		i := i
 		eg.Go(func() error {
-			//jobWorker(i, jobsChan, errChan, abortChan)
-			// what scenario for error?
 			for job := range jobsChan {
 				select {
 				case <-abortChan:
-					fmt.Printf("\tWorker: %d aborted\n", i)
-					//return err
+					fmt.Printf("\tWorker '%d' aborted\n", i)
+					//return err // what scenario for error?
 					return nil
 				default:
 					break
 				}
-				fmt.Printf("\tWorker: %d started\n", i)
+				fmt.Printf("\tWorker '%d' started\n", i)
 				if err := job(); err != nil {
 					fmt.Println(err)
 					errChan <- err
 				}
-				fmt.Printf("\tWorker: %d finished\n", i)
+				fmt.Printf("\tWorker '%d' finished\n", i)
 			}
-			fmt.Printf("\tWorker: %d exited\n", i)
-			//return err
+			fmt.Printf("\tWorker '%d' exited\n", i)
+			//return err // what scenario for error?
 			return nil
 		})
 	}
 
 	// send jobs to workers
 	for _, j := range jobs {
-		jobsChan <- j
+		select {
+		case <-abortChan:
+			break
+		default:
+			jobsChan <- j
+		}
 	}
-	//if _, ok := <-jobsChan; ok {
 	close(jobsChan)
-	//}
 
 	err := eg.Wait()
 	time.Sleep(time.Millisecond)
-	close(errChan)
+	close(errChan) // this may be read buffered errors
 
 	return err
 }
-
-//func jobWorker(workerNum int, inJob <-chan Job, outErr chan<- error, inAbort <-chan bool) {
-//	for job := range inJob {
-//		select {
-//		case <-inAbort:
-//			fmt.Printf("\tWorker: %d aborted\n", workerNum)
-//			return
-//		default:
-//			break
-//		}
-//		fmt.Printf("\tWorker: %d started\n", workerNum)
-//		if err := job(); err != nil {
-//			fmt.Println(err)
-//			outErr <- err
-//		}
-//		fmt.Printf("\tWorker: %d finished\n", workerNum)
-//	}
-//}
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
@@ -116,13 +98,13 @@ func main() {
 	for i := 0; i < JOBSNUM; i++ {
 		i := i
 		job := func() error {
-			d := rand.Intn(5) + 1                      // random time for every job
+			d := rand.Intn(3) + 1                      // random time for every job
 			n := strconv.Itoa(i)                       // job id
 			time.Sleep(time.Duration(d) * time.Second) // any work here
 			if rand.Intn(2) == 0 {                     // error gen randomly
-				return fmt.Errorf("error from job: %s", n)
+				return fmt.Errorf("job '%s' returned error", n)
 			}
-			fmt.Printf("job: %s ended successfully, duration: %d seconds\n", n, d)
+			fmt.Printf("job '%s' ended successfully, duration: %d seconds\n", n, d)
 			return nil
 		}
 		jobs = append(jobs, job)
