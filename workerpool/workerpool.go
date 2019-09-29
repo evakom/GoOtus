@@ -11,11 +11,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/sync/errgroup"
 	"log"
 	"math/rand"
 	"strconv"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // Constants.
