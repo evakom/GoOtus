@@ -8,6 +8,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"golang.org/x/sync/errgroup"
 	"log"
@@ -56,7 +57,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 				case <-abortChan:
 					fmt.Printf("\tWorker '%d' aborted\n", i)
 					//return err // what scenario for error?
-					return nil
+					return errors.New("workers aborted")
 				default:
 					break
 				}
@@ -68,7 +69,6 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 				fmt.Printf("\tWorker '%d' finished\n", i)
 			}
 			fmt.Printf("\tWorker '%d' exited\n", i)
-			//return err // what scenario for error?
 			return nil
 		})
 	}
@@ -112,7 +112,7 @@ func main() {
 
 	// start
 	if err := WorkerPool(jobs, MAXJOBS, MAXERRORS); err != nil {
-		log.Fatalln("One or more jobs returned with errors!")
+		log.Fatalln(err)
 	}
 	fmt.Println("All jobs returned successfully!")
 }
