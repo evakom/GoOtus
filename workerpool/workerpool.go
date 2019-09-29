@@ -5,25 +5,13 @@
  */
 
 // Package workerpool implements N-workers with stopping after X-errors.
-//package workerpool
-package main
+package workerpool
 
 import (
 	"errors"
 	"fmt"
-	"log"
-	"math/rand"
-	"strconv"
-	"time"
 
 	"golang.org/x/sync/errgroup"
-)
-
-// Constants.
-const (
-	JOBSNUM   = 10 // number of all jobs
-	MAXJOBS   = 3  // max concurrency jobs/workers
-	MAXERRORS = 5  // max errors from all jobs
 )
 
 // Job is type for jobs
@@ -89,31 +77,4 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	close(errChan)
 
 	return err
-}
-
-func main() {
-	rand.Seed(time.Now().UnixNano())
-	jobs := make([]Job, 0)
-
-	// jobs slice
-	for i := 0; i < JOBSNUM; i++ {
-		i := i
-		job := func() error {
-			d := rand.Intn(5) + 1                      // random time for every job
-			n := strconv.Itoa(i)                       // job id
-			time.Sleep(time.Duration(d) * time.Second) // any work here
-			if rand.Intn(2) == 0 {                     // error gen randomly
-				return fmt.Errorf("job '%s' returned error", n)
-			}
-			fmt.Printf("job '%s' ended successfully, duration: %d seconds\n", n, d)
-			return nil
-		}
-		jobs = append(jobs, job)
-	}
-
-	// start
-	if err := WorkerPool(jobs, MAXJOBS, MAXERRORS); err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println("All jobs returned successfully!")
 }
