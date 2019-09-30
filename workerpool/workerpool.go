@@ -17,6 +17,10 @@ import (
 // Job is type for jobs
 type Job func() error
 
+// ErrWorkerAborted is an error to return on an aborted workers.
+var ErrWorkerAborted = errors.New("workers aborted")
+
+
 // WorkerPool is the main worker pool manager.
 func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	var eg errgroup.Group
@@ -47,7 +51,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 				select {
 				case <-abortChan:
 					fmt.Printf("\tWorker '%d' aborted\n", i)
-					return errors.New("workers aborted")
+					return ErrWorkerAborted
 				default:
 					fmt.Printf("\tWorker '%d' started\n", i)
 					if err := job(); err != nil {
