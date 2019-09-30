@@ -30,18 +30,18 @@ var testCases = []struct {
 	description string
 }{
 	{
-		jobSum:      10,
-		maxJobs:     3,
+		jobSum:      20,
+		maxJobs:     5,
 		maxErrors:   1,
 		errExpected: ErrWorkerAborted,
-		description: "10 jobs, 3 workers, max 1 errors, workers return errors",
+		description: "20 jobs, 5 workers, max 1 errors, workers return errors",
 	},
 	{
 		jobSum:      10,
 		maxJobs:     3,
-		maxErrors:   5,
+		maxErrors:   9,
 		errExpected: nil,
-		description: "10 jobs, 3 workers, max 5 errors, no workers errors",
+		description: "10 jobs, 3 workers, max 9 errors, no workers errors",
 	},
 }
 
@@ -69,13 +69,13 @@ func genJobs() {
 		for i := 0; i < test.jobSum; i++ {
 			i := i
 			job := func() error {
-				d := rand.Intn(5) + 1                      // random time for every job
-				n := strconv.Itoa(i)                       // job id
-				time.Sleep(time.Duration(d) * time.Second) // any work here
-				if rand.Intn(2) == 0 {                     // error gen randomly
+				d := rand.Intn(10) + 1                          // random time for every job
+				n := strconv.Itoa(i)                            // job id
+				time.Sleep(time.Duration(d) * time.Millisecond) // any work here
+				if rand.Intn(2) == 0 {                          // error gen randomly
 					return fmt.Errorf("job '%s' returned error", n)
 				}
-				fmt.Printf("job '%s' ended successfully, duration: %d seconds\n", n, d)
+				// fmt.Printf("job '%s' ended successfully, duration: %d milliseconds\n", n, d)
 				return nil
 			}
 			test.jobs = append(test.jobs, job)
@@ -84,19 +84,10 @@ func genJobs() {
 	}
 }
 
-// func TestUnpackString(t *testing.T) {
-// 	for _, test := range decodeTests {
-// 		if actual := UnpackString(test.input); actual != test.expected {
-// 			t.Errorf("FAIL %s - UnpackString(%s) = '%s', expected '%s'.",
-// 				test.description, test.input, actual, test.expected)
-// 			continue
-// 		}
-// 		t.Logf("PASS UnpackString - %s", test.description)
-// 	}
-// }
-
-// func BenchmarkUnpackString(b *testing.B) {
-// 	for i := 0; i < b.N; i++ {
-// 		UnpackString(`a4bc2d5eabcdXYZA2B3C4W12BW12B3W24B 2hsq2 qw2 2a2b3c4a0b2a0000b2z1y1x1\,1\$2\.3\*4qwe\4\5qwe\45qwe\\5`)
-// 	}
-// }
+func BenchmarkWorkerPool(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, test := range testCases {
+			_ = WorkerPool(test.jobs, test.maxJobs, test.maxErrors)
+		}
+	}
+}
