@@ -43,6 +43,13 @@ var testCases = []struct {
 		errExpected: nil,
 		description: "10 jobs, 3 workers, max 9 errors, no workers errors",
 	},
+	{
+		jobSum:      100,
+		maxJobs:     10,
+		maxErrors:   55,
+		errExpected: nil,
+		description: "100 jobs, 10 workers, max 50 errors, more loading",
+	},
 }
 
 func TestWorkerPool(t *testing.T) {
@@ -69,13 +76,13 @@ func genJobs() {
 		for i := 0; i < test.jobSum; i++ {
 			i := i
 			job := func() error {
-				d := rand.Intn(10) + 1                          // random time for every job
+				d := rand.Intn(100) + 1                         // random time for every job
 				n := strconv.Itoa(i)                            // job id
-				time.Sleep(time.Duration(d) * time.Millisecond) // any work here
+				time.Sleep(time.Duration(d) * time.Microsecond) // any work here
 				if rand.Intn(2) == 0 {                          // error gen randomly
 					return fmt.Errorf("job '%s' returned error", n)
 				}
-				// fmt.Printf("job '%s' ended successfully, duration: %d milliseconds\n", n, d)
+				// fmt.Printf("job '%s' ended successfully, duration: %d microseconds\n", n, d)
 				return nil
 			}
 			test.jobs = append(test.jobs, job)
@@ -89,5 +96,6 @@ func BenchmarkWorkerPool(b *testing.B) {
 		for _, test := range testCases {
 			_ = WorkerPool(test.jobs, test.maxJobs, test.maxErrors)
 		}
+		// WorkerPool(testCases[0].jobs, testCases[0].maxJobs, testCases[0].maxErrors)
 	}
 }

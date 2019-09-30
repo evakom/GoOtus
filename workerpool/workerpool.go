@@ -24,7 +24,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	var eg errgroup.Group
 
 	jobsChan := make(chan Job, maxJobs)
-	errChan := make(chan error, maxJobs)
+	errChan := make(chan error, maxJobs*2) // for benchmark tests
 	abortChan := make(chan bool)
 
 	// check errors from jobs
