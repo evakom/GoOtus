@@ -5,6 +5,7 @@
  */
 
 // Package workerpool implements N-workers with stopping after X-errors.
+// Commented lines is for benchmark results, uncomment if no need benchmarks.
 package workerpool
 
 import (
@@ -24,7 +25,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	var eg errgroup.Group
 
 	jobsChan := make(chan Job, maxJobs)
-	errChan := make(chan error, maxJobs*2) // for benchmark tests
+	errChan := make(chan error, maxJobs)
 	abortChan := make(chan bool)
 
 	// check errors from jobs

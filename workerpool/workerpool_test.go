@@ -14,38 +14,35 @@ import (
 	"time"
 )
 
-// Constants.
-// const (
-// 	JOBSNUM   = 10 // number of all jobs
-// 	MAXJOBS   = 3  // max concurrency jobs/workers
-// 	MAXERRORS = 4  // max errors from all jobs
-// )
-
 var testCases = []struct {
 	jobs        []Job
-	jobSum      int
-	maxJobs     int
-	maxErrors   int
+	jobsNum     int // number of all jobs
+	maxJobs     int // max concurrency jobs/workers
+	maxJobsTime int // in milliseconds - random jobs run time from 0 to maxJobsTime
+	maxErrors   int // max errors from all jobs
 	errExpected error
 	description string
 }{
 	{
-		jobSum:      20,
+		jobsNum:     20,
 		maxJobs:     5,
+		maxJobsTime: 100,
 		maxErrors:   1,
 		errExpected: ErrWorkerAborted,
 		description: "20 jobs, 5 workers, max 1 errors, workers return errors",
 	},
 	{
-		jobSum:      10,
+		jobsNum:     10,
 		maxJobs:     3,
+		maxJobsTime: 1000,
 		maxErrors:   9,
 		errExpected: nil,
 		description: "10 jobs, 3 workers, max 9 errors, no workers errors",
 	},
 	{
-		jobSum:      100,
+		jobsNum:     100,
 		maxJobs:     10,
+		maxJobsTime: 10,
 		maxErrors:   55,
 		errExpected: nil,
 		description: "100 jobs, 10 workers, max 50 errors, more loading",
@@ -73,16 +70,17 @@ func genJobs() {
 
 	for i, test := range testCases {
 		test.jobs = make([]Job, 0)
-		for i := 0; i < test.jobSum; i++ {
+		for i := 0; i < test.jobsNum; i++ {
 			i := i
+			t := test.maxJobsTime
 			job := func() error {
-				d := rand.Intn(100) + 1                         // random time for every job
+				d := rand.Intn(t) + 1                           // random time for every job
 				n := strconv.Itoa(i)                            // job id
-				time.Sleep(time.Duration(d) * time.Microsecond) // any work here
+				time.Sleep(time.Duration(d) * time.Millisecond) // any work here
 				if rand.Intn(2) == 0 {                          // error gen randomly
 					return fmt.Errorf("job '%s' returned error", n)
 				}
-				// fmt.Printf("job '%s' ended successfully, duration: %d microseconds\n", n, d)
+				//fmt.Printf("job '%s' ended successfully, duration: %d ms\n", n, d)
 				return nil
 			}
 			test.jobs = append(test.jobs, job)
@@ -96,6 +94,5 @@ func BenchmarkWorkerPool(b *testing.B) {
 		for _, test := range testCases {
 			_ = WorkerPool(test.jobs, test.maxJobs, test.maxErrors)
 		}
-		// WorkerPool(testCases[0].jobs, testCases[0].maxJobs, testCases[0].maxErrors)
 	}
 }
