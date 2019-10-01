@@ -10,7 +10,6 @@ package workerpool
 import (
 	"errors"
 	"fmt"
-
 	"golang.org/x/sync/errgroup"
 )
 
@@ -28,13 +27,17 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	errChan := make(chan error, maxJobs)
 	abortChan := make(chan bool)
 	msgChan := make(chan string, maxJobs)
+	defer close(errChan)
+	defer close(msgChan)
 
-	// check messages & errors from jobs
+	// check messages from workers
 	go func() {
 		for msg := range msgChan {
 			fmt.Print(msg)
 		}
 	}()
+
+	// check errors from workers jobs
 	go func() {
 		countErr := 0
 		for err := range errChan {
@@ -80,7 +83,7 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 			jobsChan <- j
 		}
 	}
-	close(jobsChan)
+	close(jobsChan) // time to return
 
 	return eg.Wait()
 }

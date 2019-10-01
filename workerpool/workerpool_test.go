@@ -24,33 +24,33 @@ var testCases = []struct {
 	description string
 }{
 	{
+		jobsNum:     20,
+		maxJobs:     5,
+		maxJobsTime: 100,
+		maxErrors:   2,
+		errExpected: ErrWorkerAborted,
+		description: "20 jobs, 5 workers, max 2 errors, workers return max errors, aborting",
+	},
+	{
 		jobsNum:     10,
 		maxJobs:     3,
 		maxJobsTime: 1000,
-		maxErrors:   1,
-		errExpected: ErrWorkerAborted,
-		description: "20 jobs, 5 workers, max 2 errors, workers return errors",
+		maxErrors:   9,
+		errExpected: nil,
+		description: "10 jobs, 3 workers, max 9 errors, no max workers errors, exiting",
 	},
-	//{
-	//	jobsNum:     10,
-	//	maxJobs:     3,
-	//	maxJobsTime: 1000,
-	//	maxErrors:   9,
-	//	errExpected: nil,
-	//	description: "10 jobs, 3 workers, max 9 errors, no workers errors",
-	//},
-	//{
-	//	jobsNum:     100,
-	//	maxJobs:     10,
-	//	maxJobsTime: 10,
-	//	maxErrors:   55,
-	//	errExpected: nil,
-	//	description: "100 jobs, 10 workers, max 50 errors, more loading",
-	//},
+	{
+		jobsNum:     100,
+		maxJobs:     10,
+		maxJobsTime: 10,
+		maxErrors:   55,
+		errExpected: nil,
+		description: "100 jobs, 10 workers, max 55 errors, no max workers errors, more loading",
+	},
 }
 
 func TestWorkerPool(t *testing.T) {
-	genJobs()
+	generateJobs()
 	for _, test := range testCases {
 		err := WorkerPool(test.jobs, test.maxJobs, test.maxErrors)
 		if err != test.errExpected {
@@ -65,7 +65,7 @@ func TestWorkerPool(t *testing.T) {
 	}
 }
 
-func genJobs() {
+func generateJobs() {
 	rand.Seed(time.Now().UnixNano())
 
 	for i, test := range testCases {
