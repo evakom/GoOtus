@@ -27,24 +27,24 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	jobsChan := make(chan Job, maxJobs)
 	errChan := make(chan error, maxJobs)
 	abortChan := make(chan bool)
-	msgChan := make(chan string, maxJobs*4)
+	msgChan := make(chan string, maxJobs)
 
 	// check messages & errors from jobs
 	go func() {
+		for msg := range msgChan {
+			fmt.Print(msg)
+		}
+	}()
+	go func() {
 		countErr := 0
-		for {
-			select {
-			case msg := <-msgChan:
-				fmt.Print(msg)
-			case err := <-errChan:
-				countErr++
-				fmt.Println(err)
-				fmt.Printf("\tTotal number of errors - %d, MAX errors: %d\n", countErr, maxErrors)
-				if countErr >= maxErrors {
-					fmt.Printf("\tTotal number of errors: %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
-					close(abortChan) // abort all workers
-					return
-				}
+		for err := range errChan {
+			fmt.Println(err)
+			countErr++
+			fmt.Printf("\tTotal number of errors - %d, MAX errors: %d\n", countErr, maxErrors)
+			if countErr >= maxErrors {
+				fmt.Printf("\tTotal number of errors: %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
+				close(abortChan) // abort all workers
+				return
 			}
 		}
 	}()
@@ -61,7 +61,6 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 				default:
 					msgChan <- fmt.Sprintf("\tWorker '%d' started\n", i)
 					if err := job(); err != nil {
-						// fmt.Println(err)
 						errChan <- err
 					}
 					msgChan <- fmt.Sprintf("\tWorker '%d' finished\n", i)
@@ -83,9 +82,5 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	}
 	close(jobsChan)
 
-	//close(msgChan)
-
-	err := eg.Wait()
-
-	return err
+	return eg.Wait()
 }

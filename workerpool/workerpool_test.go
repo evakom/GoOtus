@@ -24,10 +24,10 @@ var testCases = []struct {
 	description string
 }{
 	{
-		jobsNum:     20,
-		maxJobs:     5,
+		jobsNum:     10,
+		maxJobs:     3,
 		maxJobsTime: 1000,
-		maxErrors:   2,
+		maxErrors:   1,
 		errExpected: ErrWorkerAborted,
 		description: "20 jobs, 5 workers, max 2 errors, workers return errors",
 	},
