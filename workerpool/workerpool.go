@@ -5,11 +5,11 @@
  */
 
 // Package workerpool implements N-workers with stopping after X-errors.
-// Commented lines is for benchmark results, uncomment if no need benchmarks.
 package workerpool
 
 import (
 	"errors"
+	"fmt"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -27,40 +27,47 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 	jobsChan := make(chan Job, maxJobs)
 	errChan := make(chan error, maxJobs)
 	abortChan := make(chan bool)
+	msgChan := make(chan string, maxJobs*4)
 
-	// check errors from jobs
+	// check messages & errors from jobs
 	go func() {
 		countErr := 0
-		for range errChan {
-			countErr++
-			// fmt.Printf("\tTotal number of errors - %d, MAX errors: %d\n", countErr, maxErrors)
-			if countErr >= maxErrors {
-				// fmt.Printf("\tTotal number of errors: %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
-				close(abortChan) // abort all workers
-				return
+		for {
+			select {
+			case msg := <-msgChan:
+				fmt.Print(msg)
+			case err := <-errChan:
+				countErr++
+				fmt.Println(err)
+				fmt.Printf("\tTotal number of errors - %d, MAX errors: %d\n", countErr, maxErrors)
+				if countErr >= maxErrors {
+					fmt.Printf("\tTotal number of errors: %d, MAX errors: %d, aborting all jobs ...\n", countErr, maxErrors)
+					close(abortChan) // abort all workers
+					return
+				}
 			}
 		}
 	}()
 
 	// start workers
 	for i := 0; i < maxJobs; i++ {
-		// i := i
+		i := i
 		eg.Go(func() error {
 			for job := range jobsChan {
 				select {
 				case <-abortChan:
-					// fmt.Printf("\tWorker '%d' aborted\n", i)
+					msgChan <- fmt.Sprintf("\tWorker '%d' aborted\n", i)
 					return ErrWorkerAborted
 				default:
-					// fmt.Printf("\tWorker '%d' started\n", i)
+					msgChan <- fmt.Sprintf("\tWorker '%d' started\n", i)
 					if err := job(); err != nil {
 						// fmt.Println(err)
 						errChan <- err
 					}
-					// fmt.Printf("\tWorker '%d' finished\n", i)
+					msgChan <- fmt.Sprintf("\tWorker '%d' finished\n", i)
 				}
 			}
-			// fmt.Printf("\tWorker '%d' exited\n", i)
+			msgChan <- fmt.Sprintf("\tWorker '%d' exited\n", i)
 			return nil
 		})
 	}
@@ -74,10 +81,11 @@ func WorkerPool(jobs []Job, maxJobs int, maxErrors int) error {
 			jobsChan <- j
 		}
 	}
-
 	close(jobsChan)
+
+	//close(msgChan)
+
 	err := eg.Wait()
-	close(errChan)
 
 	return err
 }

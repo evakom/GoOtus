@@ -26,27 +26,27 @@ var testCases = []struct {
 	{
 		jobsNum:     20,
 		maxJobs:     5,
-		maxJobsTime: 100,
-		maxErrors:   1,
-		errExpected: ErrWorkerAborted,
-		description: "20 jobs, 5 workers, max 1 errors, workers return errors",
-	},
-	{
-		jobsNum:     10,
-		maxJobs:     3,
 		maxJobsTime: 1000,
-		maxErrors:   9,
-		errExpected: nil,
-		description: "10 jobs, 3 workers, max 9 errors, no workers errors",
+		maxErrors:   2,
+		errExpected: ErrWorkerAborted,
+		description: "20 jobs, 5 workers, max 2 errors, workers return errors",
 	},
-	{
-		jobsNum:     100,
-		maxJobs:     10,
-		maxJobsTime: 10,
-		maxErrors:   55,
-		errExpected: nil,
-		description: "100 jobs, 10 workers, max 50 errors, more loading",
-	},
+	//{
+	//	jobsNum:     10,
+	//	maxJobs:     3,
+	//	maxJobsTime: 1000,
+	//	maxErrors:   9,
+	//	errExpected: nil,
+	//	description: "10 jobs, 3 workers, max 9 errors, no workers errors",
+	//},
+	//{
+	//	jobsNum:     100,
+	//	maxJobs:     10,
+	//	maxJobsTime: 10,
+	//	maxErrors:   55,
+	//	errExpected: nil,
+	//	description: "100 jobs, 10 workers, max 50 errors, more loading",
+	//},
 }
 
 func TestWorkerPool(t *testing.T) {
@@ -80,19 +80,11 @@ func genJobs() {
 				if rand.Intn(2) == 0 {                          // error gen randomly
 					return fmt.Errorf("job '%s' returned error", n)
 				}
-				//fmt.Printf("job '%s' ended successfully, duration: %d ms\n", n, d)
+				fmt.Printf("job '%s' ended successfully, duration: %d ms\n", n, d)
 				return nil
 			}
 			test.jobs = append(test.jobs, job)
 		}
 		testCases[i].jobs = test.jobs
-	}
-}
-
-func BenchmarkWorkerPool(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		for _, test := range testCases {
-			_ = WorkerPool(test.jobs, test.maxJobs, test.maxErrors)
-		}
 	}
 }
