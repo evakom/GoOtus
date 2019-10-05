@@ -40,6 +40,6 @@ func main() {
 		os.Exit(2)
 	}
 
-	fmt.Println("qqqq")
+	fmt.Println(fromFile, toFile, offset, limit)
 
 }
