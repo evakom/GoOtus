@@ -56,18 +56,18 @@ func CopyFileSeekLimit(w io.Writer, dst, src string, offset, limit int64) (int64
 
 	from, err := os.Open(src)
 	if err != nil {
-		return 0, fmt.Errorf("can't open source file: %s\n", err)
+		return 0, fmt.Errorf("can't open source file: %s", err)
 	}
 	defer from.Close()
 
 	to, err := os.Create(dst)
 	if err != nil {
-		return 0, fmt.Errorf("can't create destination file: %s\n", err)
+		return 0, fmt.Errorf("can't create destination file: %s", err)
 	}
 	defer to.Close()
 
 	if _, err := from.Seek(offset, io.SeekStart); err != nil {
-		return 0, fmt.Errorf("can't set seeker position: %s\n", err)
+		return 0, fmt.Errorf("can't set seeker position %s", err)
 	}
 
 	bufSize := limit / 100
@@ -82,19 +82,19 @@ func CopyFileSeekLimit(w io.Writer, dst, src string, offset, limit int64) (int64
 	for {
 		n, err := lr.Read(buf)
 		if err != nil && err != io.EOF {
-			return 0, fmt.Errorf("can't read from file: %s\n", err)
+			return 0, fmt.Errorf("can't read from file: %s", err)
 		}
 		if n == 0 {
 			break
 		}
 		if _, err := to.Write(buf[:n]); err != nil {
-			return 0, fmt.Errorf("can't write to file: %s\n", err)
+			return 0, fmt.Errorf("can't write to file: %s", err)
 		}
 		count += int64(n)
-		//time.Sleep(time.Millisecond * 50)
+		//time.Sleep(time.Millisecond * 100)
 		percent := count * 100 / limit
 		if _, err := fmt.Fprintf(w, "Copied: %d%%\r", percent); err != nil {
-			// can't write progress to writer
+			log.Println("can't write progress to writer")
 		}
 	}
 
