@@ -67,7 +67,15 @@ func CopyFileSeekLimit(w io.Writer, dst, src string, offset, limit int64) (int64
 	defer to.Close()
 
 	if _, err := from.Seek(offset, io.SeekStart); err != nil {
-		return 0, fmt.Errorf("can't set seeker position %s", err)
+		return 0, fmt.Errorf("can't set seeker position: %s", err)
+	}
+
+	if limit == 0 {
+		stat, err := from.Stat()
+		if err != nil {
+			return 0, fmt.Errorf("can't get file stat: %s", err)
+		}
+		limit = stat.Size()
 	}
 
 	bufSize := limit / 100
