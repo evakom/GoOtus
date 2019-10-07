@@ -19,30 +19,61 @@ var testCases = []struct {
 	offset, limit    int64
 	expError         bool
 	description      string
+	checkStr         string
 }{
 	{
 		ioutil.Discard,
-		"/var/log/auth.log",
-		"test.log",
+		"in_tests.txt",
+		"out_tests.txt",
 		0, 0,
 		false,
 		"simple copy all file with no limit and offset",
+		"",
 	},
 	{
 		ioutil.Discard,
 		"fake.fak",
-		"test.log",
+		"out_tests.txt",
 		0, 0,
 		true,
 		"error open source file",
+		"",
 	},
 	{
 		ioutil.Discard,
-		"/var/log/auth.log",
+		"in_tests.txt",
 		"",
 		0, 0,
 		true,
 		"error create destination file",
+		"",
+	},
+	{
+		ioutil.Discard,
+		"in_tests.txt",
+		"out_tests.txt",
+		100, 200,
+		false,
+		"copy 200 bytes from offset 100",
+		"",
+	},
+	{
+		ioutil.Discard,
+		"in_tests.txt",
+		"out_tests.txt",
+		22, 25,
+		false,
+		"copy 25 bytes from offset 22",
+		"There are seven days of t",
+	},
+	{
+		ioutil.Discard,
+		"in_tests.txt",
+		"out_tests.txt",
+		2340, 250,
+		false,
+		"copy 250 bytes from offset 2340 but end of file and get only 9 byte",
+		"",
 	},
 }
 
@@ -63,6 +94,7 @@ func TestCopyFileSeekLimit(t *testing.T) {
 				test.description, err)
 			continue
 		}
+
 		from, err := os.Open(test.fromFile)
 		if err != nil {
 			t.Fatalf("can't open test file: %s", err)
@@ -71,12 +103,40 @@ func TestCopyFileSeekLimit(t *testing.T) {
 		if err != nil {
 			t.Fatalf("can't get file stat: %s", err)
 		}
-		expectedBytes := stat.Size()
+
+		var expectedBytes int64
+		if test.limit == 0 {
+			expectedBytes = stat.Size()
+		} else {
+			if test.offset+test.limit <= stat.Size() {
+				expectedBytes = test.limit
+			} else {
+				expectedBytes = stat.Size() - test.offset
+			}
+		}
 		if expectedBytes != actualBytes {
 			t.Errorf("FAIL %s - CopyFileSeekLimit() returns bytes = '%d', expected bytes = '%d'.",
 				test.description, actualBytes, expectedBytes)
 			continue
 		}
+
+		if test.checkStr != "" {
+			to, err := os.Open(test.toFile)
+			if err != nil {
+				t.Fatalf("can't open test file: %s", err)
+			}
+			b, err := ioutil.ReadAll(to)
+			if err != nil {
+				t.Fatalf("can't read test file: %s", err)
+			}
+			s := string(b)
+			if s != test.checkStr {
+				t.Errorf("FAIL %s - CopyFileSeekLimit() copied data = '%s', expected data = '%s'.",
+					test.description, s, test.checkStr)
+				continue
+			}
+		}
+
 		t.Logf("PASS CopyFileSeekLimit - %s", test.description)
 	}
 }
