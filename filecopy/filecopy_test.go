@@ -61,7 +61,7 @@ var testCases = []struct {
 		ioutil.Discard,
 		"in_tests.txt",
 		"out_tests.txt",
-		22, 25,
+		23, 25,
 		false,
 		"copy 25 bytes from offset 22",
 		"There are seven days of t",
@@ -72,7 +72,7 @@ var testCases = []struct {
 		"out_tests.txt",
 		2340, 250,
 		false,
-		"copy 250 bytes from offset 2340 but end of file and get only 9 byte",
+		"copy 250 bytes from offset 2340 but end of file and get less bytes",
 		"",
 	},
 }
