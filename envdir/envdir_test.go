@@ -20,6 +20,20 @@ import (
 // short name of the test program to run with params
 const EXECNAME = "envdir"
 
+var testCasesErrors = []struct {
+	envDir      string
+	pathExec    string
+	inherit     bool
+	description string
+}{
+	{
+		"fakeDir",
+		"fakeExec",
+		false,
+		"read fake directory",
+	},
+}
+
 var testCases = []struct {
 	envDir       string
 	envVars      []string
@@ -57,14 +71,26 @@ var testCases = []struct {
 	},
 }
 
+func TestEnvDirExecErrors(t *testing.T) {
+	for _, test := range testCasesErrors {
+		out := new(strings.Builder)
+		err := EnvDirExec(out, test.envDir, test.pathExec, test.inherit)
+		if err == nil {
+			t.Errorf("FAIL '%s' - TestEnvDirExecErrors() returns error\n %s\nexpected no error.",
+				"fale Dor", err)
+		}
+	}
+	t.Logf("PASS TestEnvDirExecErrors - %s", "fale Dor")
+}
+
 func TestEnvDirExec(t *testing.T) {
 
 	execFile := getExecFile()
 
 	for _, test := range testCases {
 
-		cleanEnvDir(test.envDir)
-		generateEnvDir(test.envDir, test.envVars)
+		//cleanEnvDir(test.envDir)
+		//generateEnvDir(test.envDir, test.envVars)
 
 		out := new(strings.Builder)
 		err := EnvDirExec(out, test.envDir, execFile, test.inherit)
@@ -93,7 +119,7 @@ func TestEnvDirExec(t *testing.T) {
 		t.Logf("PASS TestEnvDirExec - %s", test.description)
 
 		// make clean if not need results
-		cleanEnvDir(test.envDir)
+		//cleanEnvDir(test.envDir)
 	}
 }
 
