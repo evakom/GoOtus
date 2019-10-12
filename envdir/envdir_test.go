@@ -10,8 +10,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -45,7 +46,12 @@ func TestEnvDirExec(t *testing.T) {
 		//cleanEnvDir(test.envDir)
 		//generateEnvDir(test.envDir, test.envVars)
 
-		out, err := exec.Command(execFile, "-env", test.envDir, "-exec", execFile).Output()
+		// you may test exec directly by uncomment this line instead bellows
+		//out, err := exec.Command(execFile, "-env", test.envDir, "-exec", execFile).Output()
+
+		out := new(strings.Builder)
+
+		err := EnvDirExec(out, execFile, test.envDir, false)
 		if err != nil {
 			t.Errorf("FAIL '%s' - TestEnvDirExec() returns error\n %s, expected no error.",
 				test.description, err)
@@ -66,7 +72,11 @@ func getExecFile() string {
 	if err != nil {
 		log.Fatalln("Can't get current test directory!", err)
 	}
-	return path.Join(dir, EXECNAME)
+	ext := ""
+	if runtime.GOOS == "windows" {
+		ext = ".exe"
+	}
+	return filepath.Join(dir, EXECNAME+ext)
 }
 
 func generateEnvDir(envDir string, envVars []string) {

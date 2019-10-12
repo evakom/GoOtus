@@ -9,18 +9,20 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
 // EnvDirExec runs program with env from given directory
-func EnvDirExec(pathProgram, pathEnvDir string, inheritSysEnv bool) error {
+func EnvDirExec(out io.Writer, pathProgram, pathEnvDir string, inheritSysEnv bool) error {
 
 	cmd := exec.Command(pathProgram)
+	cmd.Stdout = out
 
 	// replace system env with files env
 	ef, err := getEnvFromFiles(pathEnvDir)
@@ -29,15 +31,7 @@ func EnvDirExec(pathProgram, pathEnvDir string, inheritSysEnv bool) error {
 	}
 	cmd.Env = replaceSystemEnvOnFilesEnv(os.Environ(), ef, inheritSysEnv)
 
-	// run and print env
-	out, err := cmd.Output()
-	if err != nil {
-		return err
-	} else {
-		fmt.Printf("%s", out)
-	}
-
-	return nil
+	return cmd.Run()
 }
 
 func getEnvFromFiles(envDir string) ([]string, error) {
@@ -53,7 +47,7 @@ func getEnvFromFiles(envDir string) ([]string, error) {
 		if file.IsDir() {
 			continue
 		}
-		env, err := getLineFromFile(path.Join(envDir, file.Name()))
+		env, err := getLineFromFile(filepath.Join(envDir, file.Name()))
 		if err != nil {
 			return nil, err
 		}

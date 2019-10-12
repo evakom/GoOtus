@@ -49,7 +49,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	err := EnvDirExec(execFile, envDir, inheritEnv)
+	err := EnvDirExec(os.Stdout, execFile, envDir, inheritEnv)
 	if err != nil {
 		log.Fatalln(err)
 	}
