@@ -7,35 +7,93 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
 	"testing"
 )
 
-//var testCases = []struct {
-//	writer           io.Writer
-//	fromFile, toFile string
-//	offset, limit    int64
-//	expError         bool
-//	description      string
-//	checkStr         string
-//}{
-//	{
-//		ioutil.Discard,
-//		"in_tests.txt",
-//		"out_tests.txt",
-//		0, 0,
-//		false,
-//		"simple copy all file with no limit and offset",
-//		"",
-//	},
-//}
+// short name of the test program to run with params
+const EXECNAME = "envdir"
+
+var testCases = []struct {
+	envDir      string
+	envVars     []string
+	description string
+}{
+	{
+		"TestDir",
+		[]string{"QQQ=AAA", "WWW=SSS"},
+		"no inherit 1",
+	},
+	{
+		"TestDir1",
+		[]string{"EEE=DDD", "RRR=FFF", "ttt=ggg"},
+		"no inherit 2",
+	},
+}
 
 func TestEnvDirExec(t *testing.T) {
-	//for _, test := range testCases {
-	//
-	//	if err != nil {
-	//		t.Errorf("FAIL %s - CopyFileSeekLimit() returns error = '%s', expected = 'no error'.",
-	//		continue
-	//	}
-	//	t.Logf("PASS CopyFileSeekLimit - %s", test.description)
-	//}
+
+	execFile := getExecFile()
+
+	for _, test := range testCases {
+
+		//cleanEnvDir(test.envDir)
+		//generateEnvDir(test.envDir, test.envVars)
+
+		out, err := exec.Command(execFile, "-env", test.envDir, "-exec", execFile).Output()
+		if err != nil {
+			t.Errorf("FAIL '%s' - TestEnvDirExec() returns error\n %s, expected no error.",
+				test.description, err)
+			continue
+		}
+
+		fmt.Printf("%s", out)
+
+		t.Logf("PASS TestEnvDirExec - %s", test.description)
+
+		// end clean if not need results
+		// cleanEnvDir(test.envDir)
+	}
+}
+
+func getExecFile() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalln("Can't get current test directory!", err)
+	}
+	return path.Join(dir, EXECNAME)
+}
+
+func generateEnvDir(envDir string, envVars []string) {
+	err := os.Mkdir(envDir, 0777)
+	if err != nil {
+		log.Fatalln("Can't create test directory!", err)
+	}
+	for _, ev := range envVars {
+		fileName := strings.SplitN(ev, "=", 2)
+		file, err := os.Create(path.Join(envDir, fileName[0]))
+		if err != nil {
+			log.Fatalln("Can't create test file!", err)
+		}
+		_, err = file.Write([]byte(fileName[1]))
+		if err != nil {
+			log.Fatalln("Can't write test data to file!", err)
+		}
+		err = file.Close()
+		if err != nil {
+			log.Fatalln("Can't close test file!", err)
+		}
+	}
+}
+
+func cleanEnvDir(envDir string) {
+	err := os.RemoveAll(envDir)
+	if err != nil {
+		log.Fatalln("Can't delete test directory!", err)
+	}
 }
