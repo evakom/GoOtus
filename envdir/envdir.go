@@ -19,7 +19,7 @@ import (
 )
 
 // EnvDirExec runs program with env from given directory
-func EnvDirExec(out io.Writer, pathProgram, pathEnvDir string, inheritSysEnv bool) error {
+func EnvDirExec(out io.Writer, pathEnvDir, pathProgram string, inheritSysEnv bool) error {
 
 	cmd := exec.Command(pathProgram)
 	cmd.Stdout = out
@@ -29,6 +29,7 @@ func EnvDirExec(out io.Writer, pathProgram, pathEnvDir string, inheritSysEnv boo
 	if err != nil {
 		return err
 	}
+
 	cmd.Env = replaceSystemEnvOnFilesEnv(os.Environ(), ef, inheritSysEnv)
 
 	return cmd.Run()

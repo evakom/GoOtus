@@ -7,12 +7,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -21,19 +21,39 @@ import (
 const EXECNAME = "envdir"
 
 var testCases = []struct {
-	envDir      string
-	envVars     []string
-	description string
+	envDir       string
+	envVars      []string
+	expectedVars []string
+	inherit      bool
+	description  string
 }{
 	{
 		"TestDir",
 		[]string{"QQQ=AAA", "WWW=SSS"},
+		[]string{"QQQ=AAA", "WWW=SSS"},
+		false,
 		"no inherit 1",
 	},
 	{
 		"TestDir1",
 		[]string{"EEE=DDD", "RRR=FFF", "ttt=ggg"},
+		[]string{"EEE=DDD", "RRR=FFF", "ttt=ggg"},
+		false,
 		"no inherit 2",
+	},
+	{
+		"TestDir2",
+		[]string{"ZZZ=zzz\nyyy\nxxx"},
+		[]string{"ZZZ=zzz"},
+		false,
+		"no inherit 3, multiline",
+	},
+	{
+		"TestDir3",
+		[]string{"111=222", "YYY=yyy"},
+		[]string{"111=222", "YYY=yyy"},
+		true,
+		"inherit system env",
 	},
 }
 
@@ -43,27 +63,37 @@ func TestEnvDirExec(t *testing.T) {
 
 	for _, test := range testCases {
 
-		//cleanEnvDir(test.envDir)
-		//generateEnvDir(test.envDir, test.envVars)
-
-		// you may test exec directly by uncomment this line instead bellows
-		//out, err := exec.Command(execFile, "-env", test.envDir, "-exec", execFile).Output()
+		cleanEnvDir(test.envDir)
+		generateEnvDir(test.envDir, test.envVars)
 
 		out := new(strings.Builder)
-
-		err := EnvDirExec(out, execFile, test.envDir, false)
+		err := EnvDirExec(out, test.envDir, execFile, test.inherit)
 		if err != nil {
-			t.Errorf("FAIL '%s' - TestEnvDirExec() returns error\n %s, expected no error.",
+			t.Fatalf("FAIL '%s' - TestEnvDirExec() returns error\n %s\nexpected no error.",
 				test.description, err)
+		}
+
+		result := strings.Split(out.String(), "\n")
+		result = result[:len(result)-1] // delete last '\n'
+		if test.inherit {
+			test.expectedVars = append(test.expectedVars, os.Environ()...)
+			sort.Strings(test.expectedVars)
+		} else {
+			// uncomment for windows 7 with no inherit flag
+			//if runtime.GOOS == "windows" {
+			// result = result[:len(result)-1] // delete nested SYSTEMROOT
+			//}
+		}
+		if !reflect.DeepEqual(result, test.expectedVars) {
+			t.Errorf("FAIL '%s' - TestEnvDirExec() - result:\n%s\nexpected:\n%s\n",
+				test.description, result, test.expectedVars)
 			continue
 		}
 
-		fmt.Printf("%s", out)
-
 		t.Logf("PASS TestEnvDirExec - %s", test.description)
 
-		// end clean if not need results
-		// cleanEnvDir(test.envDir)
+		// make clean if not need results
+		cleanEnvDir(test.envDir)
 	}
 }
 
@@ -72,11 +102,7 @@ func getExecFile() string {
 	if err != nil {
 		log.Fatalln("Can't get current test directory!", err)
 	}
-	ext := ""
-	if runtime.GOOS == "windows" {
-		ext = ".exe"
-	}
-	return filepath.Join(dir, EXECNAME+ext)
+	return filepath.Join(dir, EXECNAME)
 }
 
 func generateEnvDir(envDir string, envVars []string) {
