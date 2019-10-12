@@ -24,7 +24,7 @@ func init() {
 	// set the custom Usage function
 	fileName := filepath.Base(os.Args[0])
 	flag.Usage = func() {
-		fmt.Printf("usage: %s -env <envdir> -exec <filename> -inh\n", fileName)
+		fmt.Printf("usage: %s -env <envdir> -exec <filename> -inherit\n", fileName)
 		fmt.Printf("example: %s -env /path/to/dir -exec /path/to/file\n", fileName)
 		flag.PrintDefaults()
 	}
@@ -32,7 +32,7 @@ func init() {
 	// set flags
 	flag.StringVar(&execFile, "exec", "", "file name to execution")
 	flag.StringVar(&envDir, "env", "", "directory where env vars are")
-	flag.BoolVar(&inheritEnv, "inh", false, "inherit system env variables")
+	flag.BoolVar(&inheritEnv, "inherit", false, "inherit system env variables")
 }
 
 func main() {
@@ -49,7 +49,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	err := EnvDirExec(execFile, envDir)
+	err := EnvDirExec(execFile, envDir, inheritEnv)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -57,4 +57,4 @@ func main() {
 }
 
 // ./envdir -env /full/path/to/dir -exec /full/path/to/envdir
-// ./envdir -env /full/path/to/dir -exec env
+// ./envdir -env /full/path/to/dir -exec env -inherit

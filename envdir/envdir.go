@@ -18,7 +18,7 @@ import (
 )
 
 // EnvDirExec runs program with env from given directory
-func EnvDirExec(pathProgram, pathEnvDir string) error {
+func EnvDirExec(pathProgram, pathEnvDir string, inheritSysEnv bool) error {
 
 	cmd := exec.Command(pathProgram)
 
@@ -27,7 +27,7 @@ func EnvDirExec(pathProgram, pathEnvDir string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Env = replaceSystemEnvOnFilesEnv(os.Environ(), ef)
+	cmd.Env = replaceSystemEnvOnFilesEnv(os.Environ(), ef, inheritSysEnv)
 
 	// run and print env
 	out, err := cmd.Output()
@@ -57,10 +57,7 @@ func getEnvFromFiles(envDir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		//if env == "" {
-		//	continue
-		//}
-		envs = append(envs, file.Name()+"="+env)
+		envs = append(envs, fmt.Sprintf("%s=%s", file.Name(), env))
 	}
 
 	return envs, nil
@@ -78,8 +75,10 @@ func getLineFromFile(fileName string) (string, error) {
 	return scanner.Text(), nil
 }
 
-func replaceSystemEnvOnFilesEnv(sysEnv, filesEnv []string) []string {
-	if !inheritEnv {
+func replaceSystemEnvOnFilesEnv(sysEnv, filesEnv []string, inheritSysEnv bool) []string {
+
+	// return only dir envs
+	if !inheritSysEnv {
 		return filesEnv
 	}
 
@@ -98,13 +97,13 @@ func replaceSystemEnvOnFilesEnv(sysEnv, filesEnv []string) []string {
 		hash[env[0]] = env[1]
 	}
 
-	// hash -> slice
+	// hash intercept -> slice
 	for key, val := range hash {
 		env := fmt.Sprintf("%s=%s", key, val)
 		inter = append(inter, env)
 	}
 
-	sort.Strings(inter)
+	sort.Strings(inter) // for best view
 
 	return inter
 }
